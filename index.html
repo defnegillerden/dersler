@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soru Bankası</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            margin: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        img {
+            width: 100px; /* Fotoğrafların boyutunu ayarlayın */
+            height: auto;
+            margin-right: 10px;
+        }
+        .photo-container {
+            margin-bottom: 20px; /* Her fotoğraf için alan bırak */
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Soru Bankası</h1>
+</header>
+
+<main id="main-content">
+    <div id="dersler">
+        <h2>Dersler</h2>
+        <div id="ders-buttons"></div>
+        <input type="text" id="ders-input" placeholder="Ders adı">
+        <button onclick="addDers()">Ders Ekle</button>
+    </div>
+    <button onclick="showAdminLogin()">Admin Girişi</button>
+</main>
+
+<div id="admin-panel" class="hidden">
+    <h2>Admin Paneli</h2>
+    <input type="password" id="admin-password" placeholder="Şifre">
+    <button onclick="loginAdmin()">Giriş Yap</button>
+</div>
+
+<div id="admin-content" class="hidden">
+    <h2>Admin İşlemleri</h2>
+    <button onclick="showCevapAnahtari()">Cevap Anahtarı</button>
+    <button onclick="showOgrenciCevaplari()">Öğrenci Cevapları</button>
+
+    <div id="cevap-anahtari" class="hidden">
+        <h3>Cevap Anahtarı</h3>
+        
+        <!-- Soru Ekleme Butonu -->
+        <button onclick="addSoru()">Soru Ekle</button>
+
+        <!-- Soru Ekleme Formu -->
+        <div id="soru-ekleme-form" class="hidden">
+            <input type="text" id="soru-input" placeholder="Soru adı">
+            <input type="text" id="cevap-a" placeholder="A Şıkkı">
+            <input type="text" id="cevap-b" placeholder="B Şıkkı">
+            <input type="text" id="cevap-c" placeholder="C Şıkkı">
+            <input type="text" id="cevap-d" placeholder="D Şıkkı">
+            
+            <!-- Fotoğraf Yükleme Girişi -->
+            <input type="file" id="photo-input" multiple accept=".jpg,.jpeg,.png,.gif">
+            
+            <button onclick="saveSoru()">Kaydet</button>
+            <button onclick="cancelSoru()">İptal</button> <!-- İptal butonu ekleniyor -->
+        </div>
+
+        <!-- Cevap Tablosu -->
+        <table id="cevap-tablo">
+            <tr>
+                <th>Sıra No</th>
+                <th>Soru Adı</th>
+                <th>Cevap A</th>
+                <th>Cevap B</th>
+                <th>Cevap C</th>
+                <th>Cevap D</th>
+                <th>Fotoğraflar</th> <!-- Fotoğraflar için yeni sütun -->
+            </tr>
+        </table>
+    </div>
+
+    <!-- Öğrenci Cevapları -->
+    <div id="ogrenci-cevaplari" class="hidden">
+        <h3>Öğrenci Cevapları</h3>
+        <table id="ogrenci-tablo">
+            <tr>
+                <th>Sıra No</th>
+                <th>Cevap</th>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Ders Silme -->
+    <div id="ders-silme" class="hidden">
+        <h3>Ders Silme</h3>
+        <select id="ders-select"></select>
+        <button onclick="deleteDers()">Dersi Sil</button>
+    </div>
+
+</div>
+
+<script>
+// Ana sayfa işlemleri
+let dersler = [];
+let adminLoggedIn = false;
+
+function addDers() {
+    const dersInput = document.getElementById('ders-input');
+    const dersName = dersInput.value.trim();
+    
+    if (dersName) {
+        dersler.push(dersName);
+        
+        // Ders butonunu ekle
+        const dersButtons = document.getElementById('ders-buttons');
+        const button = document.createElement('button');
+        button.textContent = dersName;
+        
+        // Butona tıklandığında o derse ait soruları göster
+        button.onclick = () => openDers(dersName);
+        
+        dersButtons.appendChild(button);
+        
+        // Ders silme seçeneğini güncelle
+        updateDersSelect();
+        
+        dersInput.value = '';
+    }
+}
+
+function openDers(dersName) {
+    alert(`Açılan Ders: ${dersName}`);
+}
+
+// Admin girişi
+function showAdminLogin() {
+    document.getElementById('admin-panel').classList.remove('hidden');
+}
+
+function loginAdmin() {
+    const password = document.getElementById('admin-password').value;
+    
+    if (password === '9876') {
+        adminLoggedIn = true;
+        
+        document.getElementById('admin-panel').classList.add('hidden');
+        document.getElementById('admin-content').classList.remove('hidden');
+        
+        // Ders silme seçeneğini göster
+        document.getElementById('ders-silme').classList.remove('hidden');
+        
+    } else {
+        alert('Yanlış şifre!');
+    }
+}
+
+// Cevap anahtarı
+function showCevapAnahtari() {
+    document.getElementById('cevap-anahtari').classList.remove('hidden');
+}
+
+function addSoru() {
+    // Soru ekleme formunu göster
+    document.getElementById('soru-ekleme-form').classList.remove('hidden');
+}
+
+function saveSoru() {
+    const soruInput = document.getElementById('soru-input').value;
+    const cevapA = document.getElementById('cevap-a').value;
+    const cevapB = document.getElementById('cevap-b').value;
+    const cevapC = document.getElementById('cevap-c').value;
+    const cevapD = document.getElementById('cevap-d').value;
+
+    // Fotoğraf yükleme işlemi
+    const photoInput = document.getElementById('photo-input');
+    
+    // Tüm alanların doldurulup doldurulmadığını kontrol et
+    if (soruInput && cevapA && cevapB && cevapC && cevapD) {
+      // Cevap tablosuna yeni bir satır ekle
+      const cevapTablo = document.getElementById('cevap-tablo');
+      const rowCount = cevapTablo.rows.length;
+
+      const row = cevapTablo.insertRow(rowCount);
+      row.insertCell(0).textContent = rowCount; // Sıra No
+      row.insertCell(1).textContent = soruInput; // Soru Adı
+      row.insertCell(2).textContent = cevapA; // Cevap A
+      row.insertCell(3).textContent = cevapB; // Cevap B
+      row.insertCell(4).textContent = cevapC; // Cevap C
+      row.insertCell(5).textContent = cevapD; // Cevap D
+
+      // Fotoğrafları tabloya ekle
+      if (photoInput.files.length > 0) {
+          const photoCell = row.insertCell(6); // Fotoğraflar için yeni hücre
+          for (let i = 0; i < photoInput.files.length; i++) {
+              const fileReader = new FileReader();
+              fileReader.onload = function(e) {
+                  const imgContainer = document.createElement("div");
+                  imgContainer.classList.add("photo-container");
+
+                  const img = document.createElement("img");
+                  img.src = e.target.result; // Yüklenen fotoğrafın önizlemesi
+
+                  imgContainer.appendChild(img);
+
+                  // A, B, C, D şıkları için alanlar ekleyin
+                  imgContainer.innerHTML += `
+                      A: <input type='radio' name='${rowCount}-answer' value='A'> ${cevapA} &nbsp;
+                      B: <input type='radio' name='${rowCount}-answer' value='B'> ${cevapB} &nbsp;
+                      C: <input type='radio' name='${rowCount}-answer' value='C'> ${cevapC} &nbsp;
+                      D: <input type='radio' name='${rowCount}-answer' value='D'> ${cevapD}
+                  `;
+                  
+                  photoCell.appendChild(imgContainer);
+              };
+              fileReader.readAsDataURL(photoInput.files[i]);
+          }
+      }
+
+      // Formu temizle ve gizle
+      cancelSoru();
+  } else {
+      alert("Lütfen tüm alanları doldurun.");
+  }
+}
+
+function cancelSoru() {
+   // Formu gizle ve alanları temizle
+   document.getElementById('soru-ekleme-form').classList.add('hidden');
+   document.getElementById('soru-input').value = '';
+   document.getElementById('cevap-a').value = '';
+   document.getElementById('cevap-b').value = '';
+   document.getElementById('cevap-c').value = '';
+   document.getElementById('cevap-d').value = '';
+   document.getElementById('photo-input').value = ''; // Fotoğraf girişini temizle
+}
+
+// Öğrenci cevapları
+function showOgrenciCevaplari() {
+   document.getElementById('ogrenci-cevaplari').classList.remove('hidden');
+   // Burada öğrenci cevaplarını yükleme işlemi yapılabilir.
+}
+
+// Ders silme
+function deleteDers() {
+   const select = document.getElementById('ders-select');
+   const selectedIndex = select.value;
+
+   if (selectedIndex !== '') {
+       dersler.splice(selectedIndex, 1);
+       updateDersSelect();
+       alert("Ders silindi.");
+   }
+}
+
+function updateDersSelect() {
+    const select = document.getElementById('ders-select');
+    select.innerHTML = '';
+    
+    dersler.forEach((ders, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = ders;
+        
+        select.appendChild(option);
+    });
+}
+</script>
+
+</body>
+</html>
